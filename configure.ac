@@ -10,10 +10,10 @@ AC_PREREQ(2.62)
 
 AC_INIT([BDgraph],[2.44],[],[BDgraph],[])
 
-CXX1X=`"${R_HOME}/bin/R" CMD config CXX1X`
-CXX1XSTD=`"${R_HOME}/bin/R" CMD config CXX1XSTD`
-CXX="${CXX1X} ${CXX1XSTD}"
-CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXX1XFLAGS`
+CXX11=`"${R_HOME}/bin/R" CMD config CXX11`
+CXX11STD=`"${R_HOME}/bin/R" CMD config CXX11STD`
+CXX="${CXX11} ${CXX11STD}"
+CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXX11FLAGS`
 
 AC_LANG(C++)
 
