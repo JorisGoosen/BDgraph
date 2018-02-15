@@ -1771,10 +1771,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-CXX1X=`"${R_HOME}/bin/R" CMD config CXX1X`
-CXX1XSTD=`"${R_HOME}/bin/R" CMD config CXX1XSTD`
-CXX="${CXX1X} ${CXX1XSTD}"
-CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXX1XFLAGS`
+CXX11=`R CMD config CXX11`
+CXX11STD=`R CMD config CXX11STD`
+CXX="${CXX11} ${CXX11STD}"
+CXXFLAGS=`R CMD config CXX11FLAGS`
 
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
