@@ -10,16 +10,16 @@ AC_PREREQ(2.62)
 
 AC_INIT([BDgraph],[2.44],[],[BDgraph],[])
 
-CXX11=`"${R_HOME}/bin/R" CMD config CXX11`
-CXX11STD=`"${R_HOME}/bin/R" CMD config CXX11STD`
+CXX11=`R CMD config CXX11`
+CXX11STD=`R CMD config CXX11STD`
 CXX="${CXX11} ${CXX11STD}"
-CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXX11FLAGS`
+CXXFLAGS=`R CMD config CXX11FLAGS`
 
 AC_LANG(C++)
 
-F77=`"${R_HOME}/bin/R" CMD config F77`
+F77=`R CMD config F77`
 AC_PROG_F77
-FLIBS=`"${R_HOME}/bin/R" CMD config FLIBS`
+FLIBS=`R CMD config FLIBS`
 ACX_BLAS([], AC_MSG_ERROR([could not find your BLAS library], 1))
 
 dnl this the meat of R's m4/openmp.m4
