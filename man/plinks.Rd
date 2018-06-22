@@ -10,7 +10,9 @@ Provides the estimated posterior link probabilities for all possible links in th
 \usage{ plinks( bdgraph.obj, round = 2, burnin = NULL ) }
 
 \arguments{
-  \item{bdgraph.obj}{An object of \code{S3} class \code{"bdgraph"}, from function \code{\link{bdgraph}}. }
+  \item{bdgraph.obj}{An object of \code{S3} class \code{"bdgraph"}, from function \code{\link{bdgraph}}. 
+					  It also can be an object of \code{S3} class \code{"ssgraph"}, from the function \code{ssgraph} of \code{R} package \pkg{ssgraph}.
+  }
 
   \item{round}{ A value for rounding all probabilities to the specified number of decimal places. }
   \item{burnin}{ The number of burn-in iteration to scape.  }
@@ -32,14 +34,14 @@ Mohammadi, A. et al (2017). Bayesian modelling of Dupuytren disease by using Gau
 Mohammadi, A., Massam H., and G. Letac (2017). The Ratio of Normalizing Constants for Bayesian Graphical Gaussian Model Selection, \emph{arXiv preprint arXiv:1706.04416} 
 }
 
-\author{ Abdolreza Mohammadi and Ernst Wit }
+\author{ Reza Mohammadi and Ernst Wit }
 
 \seealso{\code{\link{bdgraph}} and \code{\link{bdgraph.sim}}}
 
 \examples{
 	\dontrun{
-	# Generating multivariate normal data from a 'cycle' graph
-	data.sim <- bdgraph.sim( n = 70, p = 6, graph = "cycle", vis = TRUE )
+	# Generating multivariate normal data from a 'circle' graph
+	data.sim <- bdgraph.sim( n = 70, p = 6, graph = "circle", vis = TRUE )
    
 	bdgraph.obj   <- bdgraph( data = data.sim, iter = 10000 )
   

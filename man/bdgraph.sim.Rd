@@ -68,7 +68,7 @@ Dobra, A. and A. Mohammadi (2017). Loglinear Model Selection and Human Mobility,
 Pensar, J. et al (2017) Marginal pseudo-likelihood learning of discrete Markov network structures, \emph{Bayesian Analysis}
 }
 
-\author{ Abdolreza Mohammadi and Ernst Wit }
+\author{ Reza Mohammadi and Ernst Wit }
 
 \seealso{\code{\link{bdgraph}}}
 
@@ -86,7 +86,7 @@ round( data.sim $ data, 2 )
 data.sim <- bdgraph.sim( p = 8, n = 10, graph = "hub", type = "mixed" )
 round( data.sim $ data, 2 )
 
-# Generating only a 'hub' graph (with no data) 
+# Generating only a 'scale-free' graph (with no data) 
 graph.sim <- bdgraph.sim( p = 8, graph = "scale-free" )
 plot( graph.sim )
 graph.sim $ G

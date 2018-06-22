@@ -1,14 +1,15 @@
 useDynLib( BDgraph, .registration = TRUE )
-import( "Matrix" )
+
+importFrom( "Matrix", "Matrix", "printSpMatrix" )
+
+importFrom( "igraph", "graph.adjacency", "plot.igraph", "layout.circle", 
+            "make_undirected_graph", "max_cliques" )
 
 importFrom( "grDevices", "dev.new" )
-importFrom( "igraph", "graph.adjacency", "plot.igraph", "layout.circle" )
-
-importFrom( "igraph", "make_undirected_graph", "max_cliques" )
 
 importFrom( "graphics", "abline", "matplot", "par", "plot", "points", "text", "title", "legend" )
 		    
-importFrom( "stats", "cor", "sd", 
+importFrom( "stats", "toeplitz", "cor", "sd", 
 			"rnorm", "pnorm", "qnorm", 
 			"rbinom", "qbinom", 
 			"qexp", "qpois",
@@ -24,6 +25,7 @@ export( bdgraph,
 		plinks,
 		select,
 		pgraph,
+		graph.sim,
 		bdgraph.sim,
 		bdgraph.npn,
 		compare,
@@ -36,6 +38,7 @@ export( bdgraph,
 		rgcwish,
 		rwish,
 		gnorm,
+		rmvnorm,
 		
 		print.bdgraph, 
 		plot.bdgraph, 
@@ -51,3 +54,4 @@ S3method( "plot"   , "bdgraph" )
 S3method( "print"  , "bdgraph" )
 S3method( "plot"   , "sim" )
 S3method( "print"  , "sim" )
+S3method( "plot"   , "graph" )

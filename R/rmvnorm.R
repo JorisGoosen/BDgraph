@@ -9,34 +9,25 @@
 #                                                                                                  |
 #     Maintainer: Reza Mohammadi <a.mohammadi@uva.nl>                                              |
 ## ------------------------------------------------------------------------------------------------|
-#     Sampling from Wishart distribution                                                           |
+#     Data generator from multivarate normal distribution                                          |
 ## ------------------------------------------------------------------------------------------------|
 
-rwish = function( n = 1, p = 2, b = 3, D = diag( p ) )
+rmvnorm = function( n = 10, mean = rep( 0, length = ncol( sigma ) ), sigma = diag( length( mean ) ) )
 {
-    if( p < 1 ) stop( "'p' must be more than or equal with 1" )
-    if( b <= 2 )            stop( "For Wishart distribution parameter 'b' must be more than 2" )
-	if( !isSymmetric( D ) ) stop( "Matrix 'D' must be positive definite" )
-    if( n < 1 ) stop( "'n' must be more than or equal with 1" )
-    if( ncol( D ) != p ) stop( "'p' and 'D' have non-conforming size" )
+    if( !isSymmetric( sigma, tol = sqrt( .Machine$double.eps ), check.attributes = FALSE ) ) 
+        stop( "sigma must be a symmetric matrix" )
     
-	Ti = chol( solve( D ) ) 
-	K  = matrix( 0, p, p )
+    sigma <- as.matrix( sigma )
+    p     <- nrow( sigma )
+    if( length( mean ) == 1 ) mean <- rep( mean, p )
+    if( length( mean ) != nrow( sigma ) ) stop( "mean and sigma have non-conforming size" )
+    
+    #--- generate multivariate normal data ----------------------------------------------------|
+    chol_sig <- chol( sigma )
+    z        <- matrix( rnorm( p * n ), p, n )
+    data     <- t( chol_sig ) %*% z + mean
+    data     <- t( data )
 
-	if( n > 1 )
-	{
-		samples = array( 0, c( p, p, n ) )
-		
-		for ( i in 1 : n )
-		{
-			result       = .C( "rwish_c", as.double(Ti), K = as.double(K), as.integer(b), as.integer(p), PACKAGE = "BDgraph" )
-			samples[,,i] = matrix( result $ K, p, p ) 		
-		}
-	}else{
-		result  = .C( "rwish_c", as.double(Ti), K = as.double(K), as.integer(b), as.integer(p), PACKAGE = "BDgraph" )
-		samples = matrix( result $ K, p, p ) 				
-	}	
-
-	return( samples )   
+    return( data )
 }
-    
+   

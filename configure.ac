@@ -8,7 +8,7 @@ dnl Autoconf Configure Script Exception, version 3.0.
 
 AC_PREREQ(2.62)
 
-AC_INIT([BDgraph],[2.44],[],[BDgraph],[])
+AC_INIT([BDgraph],[2.50,[],[BDgraph],[])
 
 CXX11=`R CMD config CXX11`
 CXX11STD=`R CMD config CXX11STD`

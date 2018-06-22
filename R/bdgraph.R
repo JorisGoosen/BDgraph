@@ -1,12 +1,22 @@
-## ----------------------------------------------------------------------------|
-# Main function of BDgraph package: BDMCMC algorithm for graphical models 
-## ----------------------------------------------------------------------------|
+## ------------------------------------------------------------------------------------------------|
+#     Copyright (C) 2012 - 2018  Reza Mohammadi                                                    |
+#                                                                                                  |
+#     This file is part of BDgraph package.                                                        |
+#                                                                                                  |
+#     BDgraph is free software: you can redistribute it and/or modify it under                     |
+#     the terms of the GNU General Public License as published by the Free                         |
+#     Software Foundation; see <https://cran.r-project.org/web/licenses/GPL-3>.                    |
+#                                                                                                  |
+#     Maintainer: Reza Mohammadi <a.mohammadi@uva.nl>                                              |
+## ------------------------------------------------------------------------------------------------|
+#     Main function of BDgraph package: BDMCMC algorithm for graphical models                      |
+## ------------------------------------------------------------------------------------------------|
+
 bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc", 
 					iter = 5000, burnin = iter / 2, g.start = "empty", g.space = NULL, g.prior = 0.5, 
-					prior.df = 3, multi.update = NULL, save.all = FALSE, print = 1000, cores = "all" )
+					prior.df = 3, multi.update = NULL, save.all = FALSE, print = 1000, cores = 2 )
 {
 	check.os( os = 2 )	
-	
 	if( cores == "all" ) cores = detect_cores()
 	
 	tmp   <- .C( "check_nthread", cores = as.integer(cores), PACKAGE = "BDgraph" )
@@ -16,9 +26,13 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 	
 	burnin <- floor( burnin )
 	
-	if( class( data ) == "sim" ) data <- data $ data
-
-	if( !is.matrix( data ) & !is.data.frame( data ) ) stop( "Data should be a matrix or dataframe" )
+	if( class( data ) == "sim" )
+	{
+	    is.discrete <- data $ is.discrete
+	    data        <- data $ data
+	}
+	
+	if( !is.matrix( data ) & !is.data.frame( data ) ) stop( "Data must be a matrix or dataframe" )
 	if( is.data.frame( data ) ) data <- data.matrix( data )
 	if( iter < burnin )   stop( "Number of iteration must be more than number of burn-in" )
 
@@ -31,8 +45,9 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 	}
 		
 	dimd <- dim( data )
-	p    <- dimd[2]
-	if( is.null( n ) ) n <- dimd[1]
+	p    <- dimd[ 2 ]
+	if( p < 3 ) stop( "Number of variables/nodes ('p') must be more than 2" )
+	if( is.null( n ) ) n <- dimd[ 1 ]
 
 	if( !is.matrix( g.prior ) )
 	{
@@ -49,7 +64,7 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 		if( isSymmetric( data ) ) stop( "method='gcgm' requires all data" )
 		
  		R <- 0 * data
-		for( j in 1:p ) R[,j] = match( data[ , j], sort( unique( data[ , j] ) ) ) 
+		for( j in 1:p ) R[ , j ] = match( data[ , j ], sort( unique( data[ , j ] ) ) ) 
 		R[ is.na(R) ] = 0     # dealing with missing values	
 
 		# copula for continuous non-Gaussian data
@@ -57,15 +72,15 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 		{
 			# copula transfer 
 			data = qnorm( apply( data, 2, rank ) / ( n + 1 ) )
-#~ 			data = data / sd( data[ , 1] )
 		
 			method = "ggm"
-		}else{	# for non-Gaussian data
-			Z              <- qnorm( apply( data, 2, rank, ties.method = "random" ) / ( n + 1 ) )
-			Zfill          <- matrix( rnorm( n * p ), n, p )   # for missing values
-			Z[is.na(data)] <- Zfill[is.na(data)]               # for missing values
-			Z              <- t( ( t(Z) - apply( Z, 2, mean ) ) / apply( Z, 2, sd ) )
-			S              <- t(Z) %*% Z
+		}else{	
+			# for non-Gaussian data
+			Z                  <- qnorm( apply( data, 2, rank, ties.method = "random" ) / ( n + 1 ) )
+			Zfill              <- matrix( rnorm( n * p ), n, p )       # for missing values
+			Z[ is.na( data ) ] <- Zfill[ is.na( data ) ]               # for missing values
+			Z                  <- t( ( t( Z ) - apply( Z, 2, mean ) ) / apply( Z, 2, sd ) )
+			S                  <- t( Z ) %*% Z
 		}
 	} 
 	
@@ -73,14 +88,15 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 	{
 		if( isSymmetric( data ) )
 		{
-			if ( is.null(n) ) stop( "Please specify the number of observations 'n'" )
+			if ( is.null( n ) ) stop( "Please specify the number of observations 'n'" )
 			cat( "Input is identified as the covriance matrix. \n" )
 			S <- data
 		}else{
- 			S <- t(data) %*% data
+ 			S <- t( data ) %*% data
 		}
 	}
    
+	if( prior.df < 3 ) stop( "'prior.df' must be >= 3" )
 	D      = diag( p )
 	b      = prior.df
 	b_star = b + n
@@ -94,11 +110,19 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 		K <- g.start $ last_K
 	} 
 
+	if( class( g.start ) == "ssgraph" ) 
+	{
+	    G <- g.start $ last_graph
+	    K <- g.start $ last_K
+	} 
+	
 	if( class( g.start ) == "sim" ) 
 	{
-		G <- as.matrix( g.start $ G )
+		G <- as.matrix( unclass( g.start $ G ) )
 		K <- as.matrix( g.start $ K )
 	} 
+	
+	if( class( g.start ) == "graph" ) G <- unclass( g.start )
 	
 	if( class( g.start ) == "character" && g.start == "empty"  )
 	{
@@ -129,6 +153,15 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 		K      = matrix ( result $ K, p, p ) 	
 	}
 			
+	if( ( sum( G == 0 ) + sum( G == 1 ) ) != ( p ^ 2 ) ) stop( "Element of 'g.start', as a matrix, must have 0 or 1" )
+	
+	diag( G ) = 0    
+	if( !isSymmetric( G ) )
+	{
+	    G[ lower.tri( G, diag( TRUE ) ) ] <- 0
+	    G  = G + t( G )
+	}
+	
 	if( save.all == TRUE )
 	{
 		qp1           = ( p * ( p - 1 ) / 2 ) + 1
@@ -172,7 +205,7 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 		g_space = as.matrix( g.space )
 	}
 
-## ----------------------------------------------------------------------------|
+## ---- main BDMCMC algorithms implemented in C++ -------------------------------------------------|
 	if( save.all == TRUE )
 	{
 		if( ( method == "ggm" ) && ( algorithm == "bdmcmc" ) && ( multi_update == 1 ) )
@@ -375,15 +408,13 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 						as.integer(b), as.integer(b_star), as.double(D), as.double(Ds), as.integer(print), PACKAGE = "BDgraph" )
 		}	
 	}
-## ----------------------------------------------------------------------------|
+## ------------------------------------------------------------------------------------------------|
 
 	label      = colnames( data )
 
 	K_hat      = matrix( result $ K_hat, p, p, dimnames = list( label, label ) ) 
 	last_graph = matrix( result $ G    , p, p, dimnames = list( label, label ) )
 	last_K     = matrix( result $ K    , p, p )
-
-#	colnames( last_graph ) = colnames( data )
 
 	if( save.all == TRUE )
 	{
@@ -402,7 +433,6 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 		output = list( sample_graphs = sample_graphs, graph_weights = graph_weights, K_hat = K_hat, 
 					all_graphs = all_graphs, all_weights = all_weights, last_graph = last_graph, last_K = last_K )
 	}else{
-#		label  = colnames( last_graph )
 		p_links = matrix( result $ p_links, p, p, dimnames = list( label, label ) ) 
 
 		if( ( algorithm == "rjmcmc" ) | ( algorithm == "rj-dmh" ) )
@@ -411,7 +441,6 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 			K_hat   = K_hat / ( iter - burnin )
 		}
 		p_links[ lower.tri( p_links ) ] = 0
-#		colnames( p_links ) = colnames( data )
 		output = list( p_links = p_links, K_hat = K_hat, last_graph = last_graph, last_K = last_K )
 	}
 	
@@ -419,8 +448,9 @@ bdgraph = function( data, n = NULL, method = "ggm", algorithm = "bdmcmc",
 	return( output )   
 }
       
-## ----------------------------------------------------------------------------|
-# summary of bdgraph output
+## ------------------------------------------------------------------------------------------------|
+#    Summary of bdgraph output
+## ------------------------------------------------------------------------------------------------|
 summary.bdgraph = function( object, round = 2, vis = TRUE, ... )
 {
 	p_links    = object $ p_links
@@ -442,7 +472,7 @@ summary.bdgraph = function( object, round = 2, vis = TRUE, ... )
 		vec_G[ which( unlist( strsplit( as.character( indG_max ), "" ) ) == 1 ) ] = 1
 		selected_g[ upper.tri( selected_g ) ] <- vec_G 
 	}else{
-		selected_g[ p_links > 0.5 ]  = 1
+		selected_g[ p_links >  0.5 ] = 1
 		selected_g[ p_links <= 0.5 ] = 0
 	}
 
@@ -513,8 +543,9 @@ summary.bdgraph = function( object, round = 2, vis = TRUE, ... )
 		return( list( selected_g = Matrix( selected_g, sparse = TRUE ), p_links = Matrix( round( p_links, round ), sparse = TRUE ), K_hat = round( K_hat, round ) ) )
 }  
    
-## ----------------------------------------------------------------------------|
-# plot for class bdgraph
+## ------------------------------------------------------------------------------------------------|
+#    Plot for class bdgraph
+## ------------------------------------------------------------------------------------------------|
 plot.bdgraph = function( x, cut = NULL, number.g = 1, layout = layout.circle, ... )
 {
 	if( !is.matrix( x ) )
@@ -551,10 +582,10 @@ plot.bdgraph = function( x, cut = NULL, number.g = 1, layout = layout.circle, ..
 			
 			if( number.g > 1 & number.g < 7 ) par( op )
 		}else{
-			if( ( cut < 0 ) || ( cut > 1 ) ) stop( " Value of 'cut' must be between 0 and 1. " )
+			if( ( cut < 0 ) || ( cut > 1 ) ) stop( "Value of 'cut' must be between 0 and 1." )
 
 			p_links = x $ p_links
-			if( is.null( p_links ) ) p_links = plinks( x )
+			if( is.null( p_links ) ) p_links = BDgraph::plinks( x )
 			selected_g                   = 0 * p_links
 			selected_g[ p_links > cut ]  = 1
 			selected_g[ p_links <= cut ] = 0		
@@ -568,8 +599,9 @@ plot.bdgraph = function( x, cut = NULL, number.g = 1, layout = layout.circle, ..
 	}
 }
      
-## ----------------------------------------------------------------------------|
-# print of the bdgraph output
+## ------------------------------------------------------------------------------------------------|
+#    Print of the bdgraph output
+## ------------------------------------------------------------------------------------------------|
 print.bdgraph = function( x, round = 2, ... )
 {
 	if( !is.matrix( x ) )

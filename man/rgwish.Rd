@@ -4,7 +4,8 @@
 \title{Sampling from G-Wishart distribution}
 
 \description{
-Generates random matrices, distributed according to the G-Wishart distribution with parameters b and D, \eqn{W_G(b, D)}.
+Generates random matrices, distributed according to the G-Wishart distribution with parameters b and D, \eqn{W_G(b, D)} with respect to the graph structure \eqn{G}. 
+Note this fuction works for both non-decomposable and decomposable graphs. 
 }
 
 \usage{rgwish( n = 1, adj.g = NULL, b = 3, D = NULL )}
@@ -12,8 +13,11 @@ Generates random matrices, distributed according to the G-Wishart distribution w
 \arguments{
   \item{n}{The number of samples required. }
   \item{adj.g}{
-    The adjacency matrix corresponding to the graph structure. It should be an upper triangular matrix in which \eqn{a_{ij}=1} 
+    The adjacency matrix corresponding to the graph structure which can be non-decomposable or decomposable. It should be an upper triangular matrix in which \eqn{a_{ij}=1} 
     if there is a link between notes \eqn{i}{i} and \eqn{j}{j}, otherwise \eqn{a_{ij}=0}.
+    \code{adj.g} could be an object of class \code{"graph"}, from function \code{\link{graph.sim}}.
+    It also could be an object of class \code{"sim"}, from function \code{\link{bdgraph.sim}}.
+    It also could be an object of class \code{"bdgraph"}, from functions \code{\link{bdgraph.mpl}} or \code{\link{bdgraph}}.
     }
   \item{b}{The degree of freedom for G-Wishart distribution, \eqn{W_G(b, D)}. }
   \item{D}{The positive definite \eqn{(p \times p)} "scale" matrix for G-Wishart distribution, \eqn{W_G(b, D)}. 
@@ -31,6 +35,7 @@ which \eqn{b > 2} is the degree of freedom and D is a symmetric positive definit
 \value{
 A numeric array, say A, of dimension \eqn{(p \times p \times n)}, where each \eqn{A[,,i]}{A[,,i]} is a positive 
 definite matrix, a realization of the G-Wishart distribution, \eqn{W_G(b, D)}.
+Note, for the case \eqn{n=1}, the output is a matrix.
 }
 
 \references{
@@ -45,16 +50,20 @@ Mohammadi, A. et al (2017). Bayesian modelling of Dupuytren disease by using Gau
 Mohammadi, A., Massam H., and G. Letac (2017). The Ratio of Normalizing Constants for Bayesian Graphical Gaussian Model Selection, \emph{arXiv preprint arXiv:1706.04416} 
 }
 
-\author{ Abdolreza Mohammadi }
+\author{ Reza Mohammadi }
 
 \examples{
 \dontrun{
-graph.sim <- bdgraph.sim( p = 5, graph = "cycle" )
-adj.g     <- graph.sim $ G
-adj.g    # adjacency of graph with 5 nodes and 4 links
-   
-sample <- rgwish( n = 3, adj.g = adj.g, b = 3, D = diag(5) )
+# Generating a 'circle' graph as a non-decomposable graph
+adj.g <- graph.sim( p = 5, graph = "circle" )
+adj.g    # adjacency of graph with 5 nodes
+  
+sample <- rgwish( n = 1, adj.g = adj.g, b = 3, D = diag( 5 ) )
+round( sample, 2 ) 
+
+sample <- rgwish( n = 5, adj.g = adj.g )
 round( sample, 2 )  
+
 }
 }
 

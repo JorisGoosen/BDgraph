@@ -12,8 +12,11 @@ Generates random matrices, distributed according to the complex G-Wishart distri
 \arguments{
   \item{n}{The number of samples required. }
   \item{adj.g}{
-    The adjacency matrix corresponding to the graph structure. It should be an upper triangular matrix in which \eqn{a_{ij}=1} 
+    The adjacency matrix corresponding to the graph structure which can be non-decomposable or decomposable. It should be an upper triangular matrix in which \eqn{a_{ij}=1} 
     if there is a link between notes \eqn{i}{i} and \eqn{j}{j}, otherwise \eqn{a_{ij}=0}.
+    \code{adj.g} could be an object of class \code{"graph"}, from function \code{\link{graph.sim}}.
+    It also could be an object of class \code{"sim"}, from function \code{\link{bdgraph.sim}}.
+    It also could be an object of class \code{"bdgraph"}, from functions \code{\link{bdgraph.mpl}} or \code{\link{bdgraph}}.
     }
   \item{b}{The degree of freedom for complex G-Wishart distribution, \eqn{CW_G(b, D)}. }
   \item{D}{The positive definite \eqn{(p \times p)} "scale" matrix for complex G-Wishart distribution, \eqn{CW_G(b, D)}. 
@@ -39,12 +42,13 @@ Tank, A., N. Foti, and E. Fox (2015). Bayesian Structure Learning for Stationary
 Mohammadi, A. and E. Wit (2015). \pkg{BDgraph}: An \code{R} Package for Bayesian Structure Learning in Graphical Models, \emph{arXiv preprint arXiv:1501.05108} 
 }
 
-\author{ Lang Liu, Nicholas Foti, Alex Tank and  Abdolreza Mohammadi }
+\author{ Lang Liu, Nicholas Foti, Alex Tank and Reza Mohammadi }
 
 \examples{
 \dontrun{
-adj.g <- toeplitz( c( 0, 1, rep( 0, 3 ) ) )
-adj.g    # adjacency of graph with 5 nodes and 4 links
+# Generating a 'circle' graph as a non-decomposable graph
+adj.g <- graph.sim( p = 5, graph = "circle" )
+adj.g    # adjacency of graph with 5 nodes
    
 sample <- rgcwish( n = 3, adj.g = adj.g, b = 3, D = diag(5) )
 round( sample, 2 )  
